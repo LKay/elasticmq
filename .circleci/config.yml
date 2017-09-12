@@ -1,4 +1,4 @@
-version: 2
+version: 2.0
 jobs:
     build:
         working_directory: /elasticmq
@@ -6,135 +6,51 @@ jobs:
             - image: docker:17.07.0-ce-git
         steps:
             - checkout
-            - setup_remot_docker
+            - setup_remote_docker
             - run:
                 name: Install dependencies
                 command: |
-                    echo "install"
+                    apk add --no-cache \
+                      ca-certificates \
+                      curl \
+                      py-pip
+                    pip install \
+                      docker-compose
             - restore_cache:
                 keys:
-
-
-version: 2.0
-jobs:
-    checkout:
-        working_directory: /elasticmq
-        docker:
-            - image: docker:17.07.0-ce-git
-
-        steps:
-            - checkout
-            - setup_remote_docker
-
-    build_latest:
-        working_directory: /elasticmq
-        docker:
-            - image: docker:17.07.0-ce-git
-
-        steps:
-            - run: echo $CIRCLE_SHA1 > .circle-sha
-            - restore_cache:
-                keys:
-                    - elasticmq-{{ checksum ".circle-sha" }}
+                    - elasticmq-{{ .Branch }}
                 paths:
                     - /caches/elasticmq.tar
             - run:
                 name: Load Docker image layer cache
                 command: |
-                    set +o pipefails
-                    docker load -i /caches/elasticmq.tar
+                    set +o pipefail
+                    docker load -i /caches/elasticmq.tar | true
             - run:
                 name: Build ElasticMQ Docker image
                 command: |
-                    docker build --cache-from=elasticmq elasticmq images/latest
+                    docker build --cache-from=elasticmq -t elasticmq ./elasticmq
             - run:
                 name: Save Docker image layer cache
                 command: |
                     mkdir -p /caches
                     docker save -o /caches/elasticmq.tar elasticmq
             - save_cache:
-                key: elasticmq-{{ checksum ".circle-sha" }}
-                paths:
-                    - /caches/elasticmq.tar
-
-    build_tag:
-        working_directory: /elasticmq
-        docker:
-            - image: docker:17.07.0-ce-git
-
-        steps:
-            - run: echo $CIRCLE_SHA1 > .circle-sha
-            - restore_cache:
-                keys:
-                    - elasticmq-{{ checksum ".circle-sha" }}
+                key: elasticmq-{{ .Branch }}-{{ epoch }}
                 paths:
                     - /caches/elasticmq.tar
             - run:
-                name: Load Docker image layer cache
-                command: |
-                    set +o pipefails
-                    docker load -i /caches/elasticmq.tar
-            - run:
-                name: Build ElasticMQ Docker image
-                command: |
-                    docker build --cache-from=elasticmq elasticmq "images/$CIRCLE_TAG"
-
-    test:
-        working_directory: /elasticmq
-        docker:
-            - image: docker:17.07.0-ce-git
-        steps:
-            - run: echo $CIRCLE_SHA1 > .circle-sha
-            - restore_cache:
-                keys:
-                    - elasticmq-{{ checksum ".circle-sha" }}
-                paths:
-                    - /caches/elasticmq.tar
-            - run:
-                name: Test Docker image
+                name: Run tests
                 command: |
                     echo "Test"
-
-    deploy:
-        docker:
-            - image: docker:17.07.0-ce-git
-        steps:
-            - run: echo $CIRCLE_SHA1 > .circle-sha
-            - restore_cache:
-                keys:
-                    - elasticmq-{{ checksum ".circle-sha" }}
-            - run:
-                name: "Trigerring auto build on Docker hub"
-                command: |
-                    echo "Trigger"
-
-workflows:
-    version: 2
-
-    build_and_deploy:
-        jobs:
-            - checkout
-            - build_latest:
-                requires:
-                    - checkout
-            - build_tag:
-                requires:
-                    - checkout
-                filters:
-                    tags:
-                        only: /\d+(\.\d+){2}/
-                    branches:
-                        only: master
-
-            - test:
-                requires:
-                    - dependencies
-
+                    docker-compose -f ./docker-compose.test.yml up
             - deploy:
-                requires:
-                    - build_tag
-                filters:
-                    tags:
-                        only: /\d+(\.\d+){2}/
-                    branches:
-                        only: master
+                name: Push ElasticMq Docker image
+                command: |
+                    if echo "$CIRCLE_TAG" | grep -Eq '[0-9]+(\.[0-9]+){2}'
+                    then
+                        curl -H "Content-Type: application/json" --data '{"source_type": "Tag", "source_name": "$CIRCLE_TAG"}' -X POST "https://registry.hub.docker.com/u/lkay/elasticmq/trigger/${DOCKER_HUB_TRIGGER_TOKEN}/"
+                        curl -H "Content-Type: application/json" --data '{"docker_tag": "latest"}' -X POST "https://registry.hub.docker.com/u/lkay/elasticmq/trigger/${DOCKER_HUB_TRIGGER_TOKEN}/"
+                    else
+                        echo "Deploy skipped"
+                    fi

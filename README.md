@@ -6,9 +6,9 @@ It's on [docker-hub](https://hub.docker.com/r/lkay/elasticmq/) and [github](http
 
 ## Tags and links
 
- * `latest` [(Dockerfile)](https://github.com/LKay/elasticmq/blob/master/images/latest/Dockerfile) [![](https://images.microbadger.com/badges/image/lkay/elasticmq.svg)](https://microbadger.com/images/lkay/elasticmq "Get your own image badge on microbadger.com")
+ * `latest` [(Dockerfile)](https://github.com/LKay/elasticmq/blob/0.13.8/elasticmq/Dockerfile) [![](https://images.microbadger.com/badges/image/lkay/elasticmq:latest.svg)](https://microbadger.com/images/lkay/elasticmq:latest "Get your own image badge on microbadger.com")
 
- * `0.13.8` [(Dockerfile)](https://github.com/LKay/elasticmq/blob/master/images/0.13.8/Dockerfile) [![](https://images.microbadger.com/badges/image/lkay/elasticmq:0.13.8.svg)](https://microbadger.com/images/lkay/elasticmq:0.13.8 "Get your own image badge on microbadger.com")
+ * `0.13.8` [(Dockerfile)](https://github.com/LKay/elasticmq/blob/0.13.8/elasticmq/Dockerfile) [![](https://images.microbadger.com/badges/image/lkay/elasticmq:0.13.8.svg)](https://microbadger.com/images/lkay/elasticmq:0.13.8 "Get your own image badge on microbadger.com")
 
 ## Running
 
@@ -16,7 +16,7 @@ To run just type:
 ```sh
 docker run -P lkay/elasticmq
 ```
-The elasticmq will run on `0.0.0.0:9324` by default.
+The ElasticMQ will run on `0.0.0.0:9324` by default.
 
 Image by default uses configuration file located in `/etc/elasticmq/elasticmq.conf` and `/etc/elasticmq` is exposed ad a volume so you can easily replace that config file with your own by calling:
 ```sh
@@ -28,4 +28,4 @@ You can also provide all additional configurations using `ELASTICMQ_OPTS` enviro
 docker run -P -e ELASTICMQ_OPTS="-Dnode-address.host=localsqs -Dnode-address.port=9999" lkay/elasticmq
 ```
 
-For all configuration options refer to the [elasticmq repo](https://github.com/adamw/elasticmq#installation-stand-alone).
+For all configuration options refer to the [ElasticMQ repo](https://github.com/adamw/elasticmq#installation-stand-alone).

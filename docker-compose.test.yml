@@ -1,0 +1,7 @@
+version: "3"
+services:
+    elasticmq:
+        build:
+            context: ./elasticmq
+        image: elasticmq
+        command: echo $ELASTICMQ_VERSION
