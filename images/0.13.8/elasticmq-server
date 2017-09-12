@@ -1,0 +1,2 @@
+#!/bin/sh
+java -Dconfig.file=/etc/elasticmq/elasticmq.conf $@ -jar /elasticmq-server.jar
