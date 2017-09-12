@@ -1,5 +1,7 @@
 # Docker image for `elasticmq`
 
+[![CircleCI branch](https://img.shields.io/circleci/project/github/LKay/elasticmq/master.svg)](https://circleci.com/gh/LKay/elasticmq)
+
 A docker container for [elasticmq](https://github.com/adamw/elasticmq) which is a nice message queue server with an SQS interface which makes it fantastic for SQS app developers.
 
 It's on [docker-hub](https://hub.docker.com/r/lkay/elasticmq/) and [github](https://github.com/LKay/elasticmq)
