@@ -47,7 +47,10 @@ jobs:
             - deploy:
                 name: Push ElasticMq Docker image
                 command: |
-                    if echo "$CIRCLE_TAG" | grep -Eq '[0-9]+(\.[0-9]+){2}'
+                    set +o pipefail
+                    TAG=`git describe --tags | true`
+                    echo "$TAG"
+                    if echo "$TAG" | grep -Eq '[0-9]+(\.[0-9]+){2}'
                     then
                         curl -H "Content-Type: application/json" --data '{"source_type": "Tag", "source_name": "$CIRCLE_TAG"}' -X POST "https://registry.hub.docker.com/u/lkay/elasticmq/trigger/${DOCKER_HUB_TRIGGER_TOKEN}/"
                         curl -H "Content-Type: application/json" --data '{"docker_tag": "latest"}' -X POST "https://registry.hub.docker.com/u/lkay/elasticmq/trigger/${DOCKER_HUB_TRIGGER_TOKEN}/"
